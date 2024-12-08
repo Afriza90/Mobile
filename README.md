@@ -1,16 +1,25 @@
-# todo_list_app
+# TO DO LIST APP
 
-A new Flutter project.
+Project Flutter 
 
-## Getting Started
+## Profile
+<div>
+  <p>
+    Nama : Rizky Afriza Rosal Fino
+  </p>
+   <p>
+    NPM : 2210631170148
+  </p>
+  <p>
+    Kelas : 5B 
+  </p>
+  <p>
+   Prodi : Informatika
+  </p>
+  <p>
+   Mata Kuliah : Pemrograman Berbasis Mobile
+  </p>
+</div>
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Deskripsi Program
+Sebuah programa To Do List secara sederhana. Dimana project ini belum sempurna, masih butuh banyak fitur yang belum terealisasikan.
