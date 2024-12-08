@@ -1,77 +1,93 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import '../models/task.dart';
-import '../widgets/task_tile.dart';
+import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
+
+import 'package:todo_list_app/models/task.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final Function onThemeChanged;
+
+  const HomeScreen({super.key, required this.onThemeChanged});
 
   @override
   Widget build(BuildContext context) {
-    final taskBox = Hive.box<Task>('tasks');
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Zaaa List'),
-        centerTitle: true,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.teal, Colors.tealAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+        title: const Text('Todo List'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.dark_mode),
+            onPressed: () => onThemeChanged(),
           ),
-        ),
-        child: ValueListenableBuilder(
-          valueListenable: taskBox.listenable(),
-          builder: (context, Box<Task> box, _) {
-            if (box.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No tasks yet, add some!',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              );
-            }
-
-            return ListView.builder(
-              padding: const EdgeInsets.all(8),
-              itemCount: box.length,
-              itemBuilder: (context, index) {
-                final task = box.getAt(index);
-                return TaskTile(
-                  task: task!,
-                  onChanged: (value) {
-                    task.isCompleted = value!;
-                    task.save();
-                  },
-                  onDelete: () {
-                    task.delete();
-                  },
-                );
-              },
-            );
-          },
-        ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddTaskDialog(context),
-        child: const Icon(Icons.add),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            _showAddTaskDialog(context);
+          },
+          child: const Text('Add Task'),
+        ),
       ),
     );
   }
 
   void _showAddTaskDialog(BuildContext context) {
     final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final dateController = TextEditingController();
+    final timeController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Task'),
-        content: TextField(
-          controller: titleController,
-          decoration: const InputDecoration(hintText: 'Task title'),
+        title: const Text('Add Task',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(hintText: 'Task Title'),
+            ),
+            TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(hintText: 'Task Description'),
+            ),
+            TextField(
+              controller: dateController,
+              readOnly: true,
+              decoration: const InputDecoration(hintText: 'Due Date'),
+              onTap: () async {
+                DateTime? selectedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2101),
+                );
+                if (selectedDate != null) {
+                  dateController.text = DateFormat.yMd().format(selectedDate);
+                }
+              },
+            ),
+            TextField(
+              controller: timeController,
+              readOnly: true,
+              decoration: const InputDecoration(hintText: 'Due Time'),
+              onTap: () async {
+                TimeOfDay? selectedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+                if (selectedTime != null) {
+                  timeController.text = selectedTime.format(context);
+                }
+              },
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -80,15 +96,25 @@ class HomeScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              final taskBox = Hive.box<Task>('tasks');
-              final task = Task()
-                ..title = titleController.text
-                ..isCompleted = false;
+              final title = titleController.text.trim();
+              final description = descriptionController.text.trim();
+              final date = dateController.text.trim();
+              final time = timeController.text.trim();
 
-              taskBox.add(task);
-              Navigator.pop(context);
+              if (title.isNotEmpty && date.isNotEmpty && time.isNotEmpty) {
+                final parsedDate = DateFormat.yMd().parse(date);
+                final parsedTime = DateFormat.jm().parse(time);
+                final newTask = Task(
+                  title: title,
+                  description: description,
+                  dueDate: parsedDate,
+                  dueTime: TimeOfDay.fromDateTime(parsedTime),
+                );
+                Hive.box<Task>('tasks').add(newTask);
+                Navigator.pop(context);
+              }
             },
-            child: const Text('Add'),
+            child: const Text('Add Task'),
           ),
         ],
       ),
